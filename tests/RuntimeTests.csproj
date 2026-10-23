@@ -21,6 +21,9 @@
     <Compile Include="CreatureTurnTests.cs" />
     <Compile Include="TrainerTests.cs" />
     <Compile Include="QaGearTests.cs" />
+    <Compile Include="NetworkTests.cs" />
+    <Compile Include="../KiPacketBuffer.cs" Link="KiPacketBuffer.cs" />
+    <Compile Include="../KiPacketCodec.cs" Link="KiPacketCodec.cs" />
     <Compile Include="../CombatAccuracy.cs" Link="CombatAccuracy.cs" />
     <Compile Include="../SpellRewards.cs" Link="SpellRewards.cs" />
     <Compile Include="../SpellDropRules.cs" Link="SpellDropRules.cs" />

@@ -10,6 +10,7 @@ from spell_number_hooks import patch_spell_numbers
 from creature_ai_hooks import patch_creature_ai
 from trainer_hooks import patch_trainers
 from qa_gear_hooks import patch_qa_gear
+from network_hooks import patch_network
 
 
 ROOT = Path(__file__).resolve().parent
@@ -219,6 +220,9 @@ def main() -> None:
     patch_local_login()
     patch_combat_accuracy()
     shutil.copy2(ROOT / "CombatAccuracy.cs", SOURCE / "Game/Combat/CombatAccuracy.cs")
+    shutil.copy2(ROOT / "KiPacketBuffer.cs", SOURCE / "Shared/Networking/KiPacketBuffer.cs")
+    shutil.copy2(ROOT / "KiPacketCodec.cs", SOURCE / "Shared/Networking/KiPacketCodec.cs")
+    shutil.copy2(ROOT / "SocketFlush.cs", SOURCE / "Shared/Networking/SocketFlush.cs")
     shutil.copy2(ROOT / "EquipmentItemCards.cs", SOURCE / "Game/EquipmentItemCards.cs")
     shutil.copy2(ROOT / "InfiniteMana.cs", SOURCE / "Game/InfiniteMana.cs")
     shutil.copy2(ROOT / "AccountToggleStore.cs", SOURCE / "Game/AccountToggleStore.cs")
@@ -351,6 +355,7 @@ def main() -> None:
     patch_creature_ai(replace)
     patch_trainers(replace)
     patch_qa_gear(replace)
+    patch_network(SOURCE)
 
 
 if __name__ == "__main__":
