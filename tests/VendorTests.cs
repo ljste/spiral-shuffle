@@ -146,7 +146,9 @@ internal static class VendorTests {
 
         set.Invoke(null, [first.AccountId, false]);
         NPCInventory vanilla = SpiralDB.NpcInventories.Values.First(shop => shop.Inventory.Count > 0);
-        Require(((List<GID>)items.Invoke(null, [first, vanilla.TemplateID, vanilla.Inventory])!).SequenceEqual(vanilla.Inventory),
+        MethodInfo isQa = assembly.GetType("Imlight.CoreLib.Game.QaGear")!.GetMethod("IsQa", Static)!;
+        GID[] ordinaryStock = vanilla.Inventory.Where(item => !(bool)isQa.Invoke(null, [(ulong)item.MParts.TemplateId])!).ToArray();
+        Require(((List<GID>)items.Invoke(null, [first, vanilla.TemplateID, vanilla.Inventory])!).SequenceEqual(ordinaryStock),
             "Turning vendor shuffle off did not restore ordinary stock.");
         Console.WriteLine($"Audited {SpiralDB.NpcInventories.Count} item shops and {SpiralDB.TreasureCardInventories.Count} treasure shops.");
         return count + 1;

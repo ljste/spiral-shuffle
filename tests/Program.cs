@@ -26,6 +26,7 @@ internal static class Program {
         MethodInfo get = runtime.GetMethod("GetMode", BindingFlags.Static | BindingFlags.NonPublic)!;
         MethodInfo set = runtime.GetMethod("SetMode", BindingFlags.Static | BindingFlags.NonPublic)!;
         int checks = 0;
+        checks += NetworkTests.Run(runtime.Assembly);
         using System.Text.Json.JsonDocument catalog = System.Text.Json.JsonDocument.Parse(
             File.ReadAllText(Path.Combine(root, ".runtime/generated/catalog.json")));
         System.Text.Json.JsonElement creature = catalog.RootElement.GetProperty("CreatureSwaps")[0];
@@ -83,6 +84,7 @@ internal static class Program {
         checks += VerifyEnemyInspector(runtime.Assembly);
         checks += WorldStateTests.Run(runtime.Assembly);
         checks += VendorTests.Run(runtime.Assembly, root);
+        checks += NetworkTests.CheckAssetRetries(runtime.Assembly, root);
         checks += ServiceRoutingTests.Run(runtime.Assembly);
         checks += SpellDropTests.Run(runtime.Assembly, root);
         checks += SpellRewardTests.Run();

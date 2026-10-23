@@ -13,13 +13,15 @@ namespace Imlight.CoreLib.Game.Services;
 internal sealed class EnemyInspectorService(SessionActor sessionActor) : MessageService(sessionActor) {
     internal const uint JobId = 770102;
     private DateTime _lastQuery;
+    private bool _attached;
 
     [MessageHandler(typeof(SERVICE_101_PROTOCOL.MSG_ATTACHCOMPLETE))]
     private void StartInspector() {
-        if (!RandomizerRuntime.Enabled) {
+        if (!RandomizerRuntime.Enabled || GetActiveWizard() is null) {
             return;
         }
 
+        _attached = true;
         SendToSocket(new GAME_5_PROTOCOL.MSG_KILL_CLIENT_PROCESS { JobID = JobId });
         SendToSocket(new GAME_5_PROTOCOL.MSG_START_CLIENT_PROCESS {
             OwnerGID = GetActiveWizard().GameObjectID,
@@ -30,7 +32,7 @@ internal sealed class EnemyInspectorService(SessionActor sessionActor) : Message
 
     [MessageHandler(typeof(GAME_5_PROTOCOL.MSG_MESSAGE_PROCESS))]
     private void ReceiveInspectorRequest(GAME_5_PROTOCOL.MSG_MESSAGE_PROCESS message) {
-        if (!RandomizerRuntime.Enabled || message.JobID != JobId) {
+        if (!_attached || !RandomizerRuntime.Enabled || message.JobID != JobId) {
             return;
         }
 
@@ -59,6 +61,9 @@ internal sealed class EnemyInspectorService(SessionActor sessionActor) : Message
 
     [MessageHandler(typeof(EnemyInspectorSnapshot))]
     private void SendSnapshot(EnemyInspectorSnapshot snapshot) {
+        if (!_attached) {
+            return;
+        }
         byte[] encoded = MessageEncoder.Encode(new MG2_MESSAGES_43_PROTOCOL.MSG_MG2_REWARDS {
             score = 0, gameName = snapshot.Payload
         });

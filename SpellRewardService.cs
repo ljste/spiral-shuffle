@@ -16,13 +16,15 @@ internal sealed class SpellRewardService(SessionActor sessionActor) : MessageSer
     internal const uint JobId = 770103;
     private readonly SpellRewardQueue _rewards = new();
     private DateTime _lastPoll;
+    private bool _attached;
 
     [MessageHandler(typeof(SERVICE_101_PROTOCOL.MSG_ATTACHCOMPLETE))]
     private void StartRewards() {
-        if (!RandomizerRuntime.Enabled) {
+        if (!RandomizerRuntime.Enabled || GetActiveWizard() is null) {
             return;
         }
 
+        _attached = true;
         SendToSocket(new GAME_5_PROTOCOL.MSG_KILL_CLIENT_PROCESS { JobID = JobId });
         SendToSocket(new GAME_5_PROTOCOL.MSG_START_CLIENT_PROCESS {
             OwnerGID = GetActiveWizard().GameObjectID,
@@ -33,6 +35,9 @@ internal sealed class SpellRewardService(SessionActor sessionActor) : MessageSer
 
     [MessageHandler(typeof(SpellDropRewards))]
     private void ReceiveRewards(SpellDropRewards rewards) {
+        if (!_attached) {
+            return;
+        }
         var wizard = GetActiveWizard();
         uint[] learned = rewards.SpellIds.Where(id => wizard.SpellbookBehavior.HasSpell(id) &&
             RandomizerRuntime.DropSpellPool.Any(spell => spell.Variants.Contains(id))).Distinct().ToArray();
@@ -53,7 +58,7 @@ internal sealed class SpellRewardService(SessionActor sessionActor) : MessageSer
 
     [MessageHandler(typeof(GAME_5_PROTOCOL.MSG_MESSAGE_PROCESS))]
     private void ReceivePoll(GAME_5_PROTOCOL.MSG_MESSAGE_PROCESS message) {
-        if (message.JobID != JobId || !RandomizerRuntime.TryReadMenuMessage(message.Message, "SpellRewardUI", out int token)) {
+        if (!_attached || message.JobID != JobId || !RandomizerRuntime.TryReadMenuMessage(message.Message, "SpellRewardUI", out int token)) {
             return;
         }
 
